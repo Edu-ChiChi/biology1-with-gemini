@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>일반생물학Ⅰ 기말고사 메이트</title>
+  
+  <!-- React & Standalone Babel CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- KaTeX 수학/과학 수식 엔진 CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+    
+    body {
+      font-family: 'Inter', 'Noto Sans KR', sans-serif;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased leading-relaxed">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- 커스텀 고해상도 SVG 아이콘 모음 (의존성 제로화 및 로딩 속도 최적화) ---
+    const IconLeaf = () => (
+      <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 12m0-9c4.97 0 9 4.03 9 9 0 2.12-.74 4.07-1.97 5.61L12 12m0 0l5.5 5.5" />
+      </svg>
+    );
+
+    const IconActivity = () => (
+      <svg className="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+      </svg>
+    );
+
+    const IconBookOpen = () => (
+      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+      </svg>
+    );
+
+    const IconRotateCcw = () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+      </svg>
+    );
+
+    const IconEye = () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    );
+
+    const IconEyeOff = () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+      </svg>
+    );
+
+    const IconCheckCircle = () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    );
+
+    const IconCompass = () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9s2.015-9 4.5-9m0 0a9.003 9.003 0 018.716 2.253M12 3a9.003 9.003 0 00-8.716 2.253M12 12h.01" />
+      </svg>
+    );
+
+    const IconAward = () => (
+      <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-6.75a1.125 1.125 0 00-1.125 1.125v3.375m9 0h-9" />
+      </svg>
+    );
+
+    const IconSliders = () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75" />
+      </svg>
+    );
+
+    const IconClipboard = () => (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+      </svg>
+    );
+
+    const IconScience = () => (
+      <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    );
+
+    const IconZap = ({ className = "w-5 h-5 text-amber-500" }) => (
+      <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+      </svg>
+    );
+
+    const IconList = () => (
+      <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-3.75 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+      </svg>
+    );
+
+    // --- 고정밀 실시간 수식 렌더러 Component ---
+    const MathFormula = ({ math, block = false }) => {
+      const elRef = useRef(null);
+      useEffect(() => {
+        if (window.katex && elRef.current) {
+          try {
+            window.katex.render(math, elRef.current, {
+              throwOnError: false,
+              displayMode: block,
+            });
+          } catch (e) {
+            elRef.current.textContent = math;
+          }
+        } else if (elRef.current) {
+          elRef.current.textContent = math;
+        }
+      }, [math, block]);
+
+      return <span ref={elRef} className={`${block ? 'block my-3 text-center overflow-x-auto py-2 text-indigo-600 font-semibold' : 'inline-block px-1 text-indigo-600 font-semibold'}`} />;
+    };
+
+    // --- 메인 App 컴포넌트 ---
+    function App() {
+      const [showAll, setShowAll] = useState(false);
+      const [userAnswers, setUserAnswers] = useState({});
+      const [activeTab, setActiveTab] = useState('quiz_prep'); // 'quiz_prep' | 'exam_full' | 'lecture_notes' | 'chem_physics' | 'formulas_all'
+      const [score, setScore] = useState(0);
+
+      // 전체 빈칸의 개수 매핑 (총 150개)
+      const TOTAL_BLANKS = 150;
+
+      const toggleBlank = (id) => {
+        setUserAnswers(prev => ({
+          ...prev,
+          [id]: !prev[id]
+        }));
+      };
+
+      const handleToggleAll = () => {
+        const newState = !showAll;
+        setShowAll(newState);
+        const updated = {};
+        for (let i = 1; i <= TOTAL_BLANKS; i++) {
+          updated[`q${i}`] = newState;
+        }
+        setUserAnswers(updated);
+      };
+
+      useEffect(() => {
+        const count = Object.keys(userAnswers).filter(key => userAnswers[key]).length;
+        setScore(count);
+      }, [userAnswers]);
+
+      const handleReset = () => {
+        setUserAnswers({});
+        setShowAll(false);
+        setScore(0);
+      };
+
+      // --- 실시간 수식 매칭형 빈칸 카드 컴포넌트 ---
+      const Blank = ({ id, answer, hint, isMath = false }) => {
+        const isRevealed = userAnswers[id] || showAll;
+        return (
+          <span
+            onClick={() => toggleBlank(id)}
+            title={hint ? `힌트: ${hint}` : '클릭해서 정답 보기'}
+            className={`inline-flex items-center justify-center mx-1 px-3 py-0.5 rounded-md cursor-pointer transition-all duration-300 transform font-bold select-none border-b-2 ${
+              isRevealed
+                ? 'bg-emerald-50 text-emerald-950 border-emerald-400 scale-100 shadow-sm'
+                : 'bg-indigo-100 text-indigo-100 hover:bg-indigo-200 border-indigo-300 animate-pulse min-w-[5.5rem]'
+            }`}
+          >
+            {isRevealed ? (
+              isMath ? <MathFormula math={answer} /> : answer
+            ) : (
+              '❔'
+            )}
+          </span>
+        );
+      };
+
+      // --- 글자 하나하나씩 격막형 쪼개기용 컴포넌트 (쪽지시험 전용 포맷) ---
+      const LetterBlank = ({ id, answerChar, hint }) => {
+        const isRevealed = userAnswers[id] || showAll;
+        return (
+          <span
+            onClick={() => toggleBlank(id)}
+            title={hint || '클릭해서 정답 글자 확인'}
+            className={`inline-flex items-center justify-center w-7 h-7 mx-0.5 rounded-md border text-center font-extrabold text-sm select-none cursor-pointer transition-all duration-300 transform ${
+              isRevealed
+                ? 'bg-amber-100 text-amber-950 border-amber-400 scale-105 shadow-inner'
+                : 'bg-indigo-200 text-indigo-200 hover:bg-indigo-300 border-indigo-400 animate-pulse'
+            }`}
+          >
+            {isRevealed ? answerChar : ''}
+          </span>
+        );
+      };
+
+      return (
+        <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col animate-fadeIn">
+          {/* Header */}
+          <header className="bg-slate-900 text-white shadow-xl border-b border-emerald-500/30 sticky top-0 z-50">
+            <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-emerald-600 rounded-xl shadow-lg shadow-emerald-500/30">
+                  <IconBookOpen />
+                </div>
+                <div>
+                  <h1 className="text-xl font-black tracking-tight flex items-center gap-2">
+                    일반생물학Ⅰ <span className="text-xs bg-emerald-500/50 text-emerald-200 px-2 py-0.5 rounded-full font-bold">기말고사 메이트</span>
+                  </h1>
+                  <p className="text-xs text-slate-400 font-medium">상명대학교 일반생물학1 (2분반) 모바일 반응형 완벽 암기장</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="text-xs font-semibold px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg flex items-center gap-2">
+                  <IconAward />
+                  <span>인출 성취율: <span className="text-emerald-400 font-bold">{score}</span> / {TOTAL_BLANKS}</span>
+                </div>
+                
+                <button
+                  onClick={handleToggleAll}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all border border-slate-700 hover:border-emerald-400 bg-slate-800 hover:bg-slate-750 text-slate-200"
+                >
+                  {showAll ? <IconEyeOff /> : <IconEye />}
+                  {showAll ? '전체 가리기' : '정답 모두 보기'}
+                </button>
+
+                <button
+                  onClick={handleReset}
+                  className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-slate-700"
+                  title="초기화"
+                >
+                  <IconRotateCcw />
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {/* Hero Banner */}
+          <section className="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white py-8 px-4 border-b border-emerald-900">
+            <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="space-y-2 max-w-2xl">
+                <div className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 text-xs px-2.5 py-1 rounded-full border border-emerald-500/30 font-bold">
+                  <IconLeaf />
+                  <span>9주차 ~ 12주차 기말 고유 범위 및 지엽 디테일 완벽 저격</span>
+                </div>
+                <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+                  쪽지시험(5%) & 단답형 & 서술형 원클릭 암기 메이트
+                </h2>
+                <p className="text-slate-300 text-sm leading-relaxed">
+                  중간고사는 완전히 제외하고 오직 기말 범위의 디테일만 담았습니다. 가장 왼쪽에 신설된 <strong>주차별 쪽지시험 구역</strong>에서 격막형 쪼개기 빈칸을 풀어보고 고득점을 달성해 보세요.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Navigation tabs */}
+          <div className="bg-white border-b border-slate-200 sticky top-[73px] sm:top-[77px] z-40 shadow-sm">
+            <div className="max-w-5xl mx-auto px-4 flex gap-2 overflow-x-auto">
+              <button
+                onClick={() => setActiveTab('quiz_prep')}
+                className={`py-4 px-3 sm:px-5 font-bold text-sm border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+                  activeTab === 'quiz_prep'
+                    ? 'border-emerald-600 text-emerald-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <IconList />
+                <span>주차별 쪽지시험 대비 (전체 5%)</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('exam_full')}
+                className={`py-4 px-3 sm:px-5 font-bold text-sm border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+                  activeTab === 'exam_full'
+                    ? 'border-emerald-600 text-emerald-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <IconCheckCircle />
+                <span>단답형 & 서술형 완벽 대비 50선</span>
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('lecture_notes')}
+                className={`py-4 px-3 sm:px-5 font-bold text-sm border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+                  activeTab === 'lecture_notes'
+                    ? 'border-emerald-600 text-emerald-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <IconCompass />
+                <span>주차별 핵심 메커니즘 도해</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('chem_physics')}
+                className={`py-4 px-3 sm:px-5 font-bold text-sm border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+                  activeTab === 'chem_physics'
+                    ? 'border-emerald-600 text-emerald-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <IconZap className="w-4 h-4 text-amber-500" />
+                <span>생명공학기술 (Biotechnology) 존</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('formulas_all')}
+                className={`py-4 px-3 sm:px-5 font-bold text-sm border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+                  activeTab === 'formulas_all'
+                    ? 'border-emerald-600 text-emerald-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <IconClipboard />
+                <span>기말대비 초고밀도 요약집</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Main Content Areas */}
+          <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-8">
+            
+            {/* Tab 0: 주차별 쪽지시험 대비 (기말 버전 완벽 신설) */}
+            {activeTab === 'quiz_prep' && (
+              <div className="space-y-6 animate-fadeIn">
+                <div className="pb-2 border-b border-slate-200 flex justify-between items-center">
+                  <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                    <span className="w-2.5 h-6 bg-emerald-600 rounded-sm"></span>
+                    기말 범위 주차별 쪽지시험 완벽 정복 (각 주차별 2문항 엄선)
+                  </h3>
+                  <span className="text-xs bg-amber-50 text-amber-800 px-3 py-1 rounded-full font-bold border border-amber-200">글자 격자형 암기 포맷</span>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6">
+                  {/* 9주차 쪽지시험 */}
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between border-b pb-2">
+                      <span className="font-extrabold text-sm text-emerald-600 flex items-center gap-1">
+                        <IconLeaf /> [9주차] 식물의 생식과 구조 쪽지시험
+                      </span>
+                      <span className="text-xs text-slate-400">배점 5% 연계</span>
+                    </div>
+                    <div className="space-y-4 text-slate-700 text-[14px]">
+                      <div className="p-3.5 bg-slate-50 rounded-lg space-y-2">
+                        <p className="font-semibold text-slate-800">1. 나자식물은 수분 이후 피자식물과 다르게 단일수정을 진행하여 종자 성숙 시 영양 공급 조직으로 반수체 상태(n)의 이것을 사용한다.</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-slate-500 font-medium">정답: </span>
+                          <LetterBlank id="q101" answerChar="자" />
+                          <LetterBlank id="q102" answerChar="성" />
+                          <LetterBlank id="q103" answerChar="배" />
+                          <LetterBlank id="q104" answerChar="우" />
+                          <LetterBlank id="q105" answerChar="자" />
+                          <LetterBlank id="q106" answerChar="체" />
+                        </div>
+                      </div>
+
+                      <div className="p-3.5 bg-slate-50 rounded-lg space-y-2">
+                        <p className="font-semibold text-slate-800">2. 식물의 영구 기계적 지지 조직 중 단단한 리그닌 2차벽을 지니며 성숙이 완료되었을 때 죽은 세포 상태인 것을 무엇이라 하는가?</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-slate-500 font-medium">정답: </span>
+                          <LetterBlank id="q107" answerChar="후" />
+                          <LetterBlank id="q108" answerChar="벽" />
+                          <LetterBlank id="q109" answerChar="세" />
+                          <LetterBlank id="q110" answerChar="포" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 10주차 쪽지시험 */}
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between border-b pb-2">
+                      <span className="font-extrabold text-sm text-emerald-600 flex items-center gap-1">
+                        <IconLeaf /> [10주차] 식물 성장 조절 및 환경 반응 쪽지시험
+                      </span>
+                    </div>
+                    <div className="space-y-4 text-slate-700 text-[14px]">
+                      <div className="p-3.5 bg-slate-50 rounded-lg space-y-2">
+                        <p className="font-semibold text-slate-800">3. 옥신의 산성 신장 이론 중, 산성화된 세포벽 환경에서 셀룰로스 미세섬유 간의 느슨한 결합 이완 작용을 개시하는 특수 효소 단백질은?</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-slate-500 font-medium">정답: </span>
+                          <LetterBlank id="q111" answerChar="확" />
+                          <LetterBlank id="q112" answerChar="장" />
+                          <LetterBlank id="q113" answerChar="소" />
+                        </div>
+                      </div>
+
+                      <div className="p-3.5 bg-slate-50 rounded-lg space-y-2">
+                        <p className="font-semibold text-slate-800">4. 식물의 개화 및 계절 반응을 통제하는 적색광 수용체인 이것은 Pr형과 Pfr형 사이의 가역적 광전환 특성을 보인다.</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-slate-500 font-medium">정답: </span>
+                          <LetterBlank id="q114" answerChar="피" />
+                          <LetterBlank id="q115" answerChar="토" />
+                          <LetterBlank id="q116" answerChar="크" />
+                          <LetterBlank id="q117" answerChar="롬" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 11주차 쪽지시험 */}
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between border-b pb-2">
+                      <span className="font-extrabold text-sm text-emerald-600 flex items-center gap-1">
+                        <IconLeaf /> [11주차] 동물의 조직과 줄기세포 쪽지시험
+                      </span>
+                    </div>
+                    <div className="space-y-4 text-slate-700 text-[14px]">
+                      <div className="p-3.5 bg-slate-50 rounded-lg space-y-2">
+                        <p className="font-semibold text-slate-800">5. 동물의 심근 섬유에서 신속하고 동시 다발적인 수축 수송 결합을 위해 간극연접(gap junction)을 고밀도로 함유하고 있는 전기적 연결 지점은?</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-slate-500 font-medium">정답: </span>
+                          <LetterBlank id="q118" answerChar="개" />
+                          <LetterBlank id="q119" answerChar="재" />
+                          <LetterBlank id="q120" answerChar="원" />
+                          <LetterBlank id="q121" answerChar="반" />
+                        </div>
+                      </div>
+
+                      <div className="p-3.5 bg-slate-50 rounded-lg space-y-2">
+                        <p className="font-semibold text-slate-800">6. 줄기세포가 유사분열한 후 자기 자신과 동일한 세포 1개와 계통 분화가 결정된 전구세포 1개를 비대칭적으로 만들어내는 고유 잠재력은?</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-slate-500 font-medium">정답: </span>
+                          <LetterBlank id="q122" answerChar="자" />
+                          <LetterBlank id="q123" answerChar="가" />
+                          <LetterBlank id="q124" answerChar="재" />
+                          <LetterBlank id="q125" answerChar="생" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 12주차 쪽지시험 */}
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between border-b pb-2">
+                      <span className="font-extrabold text-sm text-emerald-600 flex items-center gap-1">
+                        <IconLeaf /> [12주차] 동물의 생식과 발생 & 출산 쪽지시험
+                      </span>
+                    </div>
+                    <div className="space-y-4 text-slate-700 text-[14px]">
+                      <div className="p-3.5 bg-slate-50 rounded-lg space-y-2">
+                        <p className="font-semibold text-slate-800">7. 수정란의 초기 급격한 세포 분열로, 통상의 세포 주기 중 간기 성장(G1, G2)이 없어 딸세포들의 개별 부피가 등분 수축하는 연속적 분열은?</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-slate-500 font-medium">정답: </span>
+                          <LetterBlank id="q126" answerChar="난" />
+                          <LetterBlank id="q127" answerChar="할" />
+                        </div>
+                      </div>
+
+                      <div className="p-3.5 bg-slate-50 rounded-lg space-y-2">
+                        <p className="font-semibold text-slate-800">8. 분만 시 자궁 평활근 수축 압박이 모체 시상하부를 감각 신경망으로 되자극하여 옥시토신 호르몬을 더욱 대량 축적 유출시키는 증폭 기작은?</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-slate-500 font-medium">정답: </span>
+                          <LetterBlank id="q128" answerChar="양" />
+                          <LetterBlank id="q129" answerChar="성" />
+                          <LetterBlank id="q130" answerChar="피" />
+                          <LetterBlank id="q131" answerChar="드" />
+                          <LetterBlank id="q132" answerChar="백" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 1: 단답형 & 서술형 완벽 대비 50선 */}
+            {activeTab === 'exam_full' && (
+              <div className="space-y-8 animate-fadeIn">
+                
+                {/* 9주차 파트 */}
+                <div className="space-y-4">
+                  <div className="pb-2 border-b border-slate-200 flex justify-between items-center">
+                    <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                      <span className="w-2.5 h-6 bg-emerald-600 rounded-sm"></span>
+                      [9주차] 식물의 생식과 구조 (Plant Reproduction)
+                    </h3>
+                    <span className="text-xs bg-emerald-50 text-emerald-800 px-3 py-1 rounded-full font-bold">나자 vs 피자식물 & 수정 경로</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    {/* 단답형 구역 */}
+                    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                      <h4 className="text-sm font-black text-slate-900 flex items-center gap-1">
+                        <span className="w-1.5 h-3.5 bg-emerald-500 rounded-xs"></span>
+                        단답형 핵심 문항
+                      </h4>
+                      <div className="space-y-3 text-slate-700 text-[15px] leading-relaxed">
+                        <p>
+                          (1) 식물 표피세포들은 표면에서 공기에 노출되어 수분이 손실되는 것을 차단하기 위해 세포 외부로 무정형 지질 성분인 <Blank id="q97" answer="각피" hint="cutin" />와 단단한 소수성 고체인 <Blank id="q98" answer="밀랍" hint="wax" />을 분비한다.
+                        </p>
+                        <p>
+                          (2) 나자식물(겉씨식물)의 생식 구조인 원추체 중 꽃가루(폴렌입자)를 만드는 곳은 <Blank id="q3" answer="폴렌원추체" hint="웅성 원추체 구조" />이며, 장난기가 위치하여 난세포가 형성되는 곳은 <Blank id="q4" answer="밑씨원추체" hint="자성 원추체 구조" />이다.
+                        </p>
+                        <p>
+                          (3) 피자식물의 꽃은 전형적으로 꽃받침잎, 꽃잎, 수분을 유도하는 <Blank id="q5" answer="수술" hint="stamen" />과 밑씨를 둘러싸고 발달하는 <Blank id="q6" answer="암술" hint="carpel/pistil" />의 네 가지 기본 기관으로 구획화되어 발달한다.
+                        </p>
+                        <p>
+                          (4) 식물체에서 무기염류와 수분의 상향 수송을 도맡는 무생물성 관다발 통로는 <Blank id="q7" answer="물관부" hint="xylems" />이며, 광합성 산물을 수송하는 생물성 통로는 <Blank id="q8" answer="체관부" hint="phloems" />이다.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 서술형 구역 */}
+                    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                      <h4 className="text-sm font-black text-slate-900 flex items-center gap-1">
+                        <span className="w-1.5 h-3.5 bg-indigo-500 rounded-xs"></span>
+                        서술형 메커니즘 완벽 대비
+                      </h4>
+                      <div className="space-y-4 text-slate-700 text-[15px] leading-relaxed">
+                        <div className="bg-slate-50 p-4 rounded-xl border">
+                          <p className="font-bold text-xs text-indigo-600 mb-2">Q. 피자식물의 중복수정(Double Fertilization) 기작을 수정 후 생성물질의 배수성과 연계하여 기술하시오.</p>
+                          <p className="text-sm leading-relaxed">
+                            수분된 꽃가루(웅성배우자체) 내부의 생식세포가 분열하여 2개의 정세포가 생성된다. 화분관을 타고 밑씨에 도달한 이 정세포 중 첫 번째 정세포(<MathFormula math="n" />)는 난세포(<MathFormula math="n" />)와 결합하여 이배체 상태의 <Blank id="q9" answer="배" isMath math="2n" hint="정세포(n)+난세포(n)" />(<MathFormula math="2n" />)를 형성하고, 두 번째 정세포(<MathFormula math="n" />)는 중앙세포 내에 존재하는 2개의 극핵(<MathFormula math="n+n" />)과 삼중 융합하여 삼배체 상태의 <Blank id="q11" answer="배젖" isMath math="3n" hint="정세포(n)+극핵(2개, 2n)" />(<MathFormula math="3n" />)을 발달시킨다.
+                          </p>
+                        </div>
+                        <div className="bg-slate-50 p-4 rounded-xl border">
+                          <p className="font-bold text-xs text-indigo-600 mb-2">Q. 나자식물과 피자식물의 수정 후 영양공급 조직의 형성 기작 차이를 서술하시오.</p>
+                          <p className="text-sm leading-relaxed">
+                            피자식물은 수정과 동시에 중복수정에 의해 형성된 삼배체 상태의 <Blank id="q12" answer="배젖(3n)" hint="3배성 세포 조직" />이 배발생에 필요한 영양을 축적하는 반면, 나자식물은 별도의 극핵 융합 수정 과정 없이 수분 전에 미리 발달되어 있던 반수체 상태의 <Blank id="q13" answer="자성배우자체" hint="n 상태의 자성 세포 조직" />(<MathFormula math="n" />)가 수정 후 그대로 유지되어 배에 물질을 공급하는 영양 조직으로 활용된다.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 10주차 파트 */}
+                <div className="space-y-4">
+                  <div className="pb-2 border-b border-slate-200 flex justify-between items-center">
+                    <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                      <span className="w-2.5 h-6 bg-emerald-600 rounded-sm"></span>
+                      [10주차] 식물 성장 조절 및 환경 반응 (Plant Regulation)
+                    </h3>
+                    <span className="text-xs bg-emerald-50 text-emerald-800 px-3 py-1 rounded-full font-bold">식물 호르몬 & 광수용 메커니즘</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    {/* 단답형 구역 */}
+                    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                      <h4 className="text-sm font-black text-slate-900 flex items-center gap-1">
+                        <span className="w-1.5 h-3.5 bg-emerald-500 rounded-xs"></span>
+                        단답형 핵심 문항
+                      </h4>
+                      <div className="space-y-3 text-slate-700 text-[15px] leading-relaxed">
+                        <p>
+                          (5) 뿌리끝 분열 조직에서 주로 발달하여 신장 성장을 보조하고 기내 배양 시 눈(Shoot)의 발달을 촉진하는 물질은 <Blank id="q14" answer="시토키닌" hint="cytokinin" />이다.
+                        </p>
+                        <p>
+                          (6) 생장 호르몬의 미분화 상태로 식물체 상처 부위나 배양 시 다량 축적되는 무정형 분열 세포 덩어리를 <Blank id="q15" answer="캘러스" hint="callus" /> 조직이라 한다.
+                        </p>
+                        <p>
+                          (7) 종자 발아를 자극하며 줄기 및 절간(마디 사이)의 신장 성장을 급격히 유도하는 지베렐린은 <Blank id="q16" answer="지베렐린" hint="gibberellin" />이다.
+                        </p>
+                        <p>
+                          (8) 수분 스트레스 상황에서 공변세포 수분을 조절하여 기공 폐쇄를 유도하고 종자 휴면 상태를 고수하게 만드는 산성 호르몬은 <Blank id="q17" answer="아브시스산" hint="ABA" />이다.
+                        </p>
+                        <p>
+                          (9) 기체 상태로 수송되어 과실을 노랗게 숙성시키고 가을철 식물체의 낙엽과 탈리 작용을 유도하는 기체는 <Blank id="q18" answer="에틸렌" hint="ethylene" />이다.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 서술형 구역 */}
+                    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                      <h4 className="text-sm font-black text-slate-900 flex items-center gap-1">
+                        <span className="w-1.5 h-3.5 bg-indigo-500 rounded-xs"></span>
+                        서술형 메커니즘 완벽 대비
+                      </h4>
+                      <div className="space-y-4 text-slate-700 text-[15px] leading-relaxed">
+                        <div className="bg-slate-50 p-4 rounded-xl border">
+                          <p className="font-bold text-xs text-indigo-600 mb-2">Q. 옥신(Auxin)의 산성 신장 이론(Acid Growth Hypothesis) 메커니즘을 세포벽 수준에서 설명하시오.</p>
+                          <p className="text-sm leading-relaxed">
+                            줄기 끝 정단분열조직에서 합성된 옥신은 세포막에 위치한 <Blank id="q19" answer="수소 이온 펌프" hint="양성자 펌프(H+-ATPase)" />를 자극하여 활성화시킨다. 이에 따라 세포벽 내부 영역으로 다량의 양성자(<MathFormula math="\text{H}^+" />)가 유출되어 세포벽의 pH가 저하되어 산성화된다. 산성 환경에서 세포벽 내 다당류 교차 결합을 끊어주는 <Blank id="q20" answer="확장소" hint="익스팬신(expansin) 단백질" />가 활성화되어 셀룰로스 미세섬유 간의 물리적 결합이 느슨해지고, 이완된 세포벽 사이로 물이 대량 유입되며 발생하는 삼투적 팽압에 의해 세포가 영구 신장한다.
+                          </p>
+                        </div>
+                        <div className="bg-slate-50 p-4 rounded-xl border">
+                          <p className="font-bold text-xs text-indigo-600 mb-2">Q. 광주기성에서 개화의 결정 요인이 낮의 길이가 아니라 밤의 길이인 이유를 단일식물의 개화 억제 기작과 연계하여 서술하시오.</p>
+                          <p className="text-sm leading-relaxed">
+                            식물은 광주기성 조절 시 연속적인 <Blank id="q21" answer="밤의 길이" hint="연속적 암기" />를 측정한다. 단일식물(장야식물)은 한계 암기보다 밤의 길이가 길어야 개화할 수 있다. 만약 한계 암기를 충족하는 연속적 어둠 속에 짧은 적색광 자극을 가하는 <Blank id="q22" answer="광중단" hint="Flash of light" />을 처리하면, 적색광 자극에 의해 비활성 Pr 피토크롬이 생리적 개화 억제 물질인 활성 <Blank id="q23" answer="P_fr" hint="개화 조절 인자" />로 광전환된다. 그 결과 식물은 어둠이 단절되었다고 판단하여 단일식물의 개화 작용이 저해된다.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 11주차 파트 */}
+                <div className="space-y-4">
+                  <div className="pb-2 border-b border-slate-200 flex justify-between items-center">
+                    <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                      <span className="w-2.5 h-6 bg-emerald-600 rounded-sm"></span>
+                      [11주차] 동물의 조직과 줄기세포 (Animal Physiology)
+                    </h3>
+                    <span className="text-xs bg-emerald-50 text-emerald-800 px-3 py-1 rounded-full font-bold">동물 조직계 & 전분화능 조절</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    {/* 단답형 구역 */}
+                    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                      <h4 className="text-sm font-black text-slate-900 flex items-center gap-1">
+                        <span className="w-1.5 h-3.5 bg-emerald-500 rounded-xs"></span>
+                        단답형 핵심 문항
+                      </h4>
+                      <div className="space-y-3 text-slate-700 text-[15px] leading-relaxed">
+                        <p>
+                          (10) 신체 내부 강소 표면과 외부를 덮어 보호하고, 일부 분비 및 흡수 장벽으로 작동하는 결합형 표면 조직은 <Blank id="q24" answer="상피조직" hint="epithelial tissue" />이다.
+                        </p>
+                        <p>
+                          (11) 세포외기질(ECM)이 매우 풍부하고 교원 섬유 등을 지녀 조직을 고정시키고 신체 구도를 단단히 지지해 주는 완충 조직은 <Blank id="q25" answer="결합조직" hint="연골, 뼈, 지방, 혈액 등을 지칭" />이다.
+                        </p>
+                        <p>
+                          (12) 가로무늬를 지닌 심근 조직에서 동방결절 수축 신호가 개별 세포들 사이로 빠르게 전도될 수 있도록 돕는 연접 통로는 <Blank id="q26" answer="개재원반" hint="gap junction을 내포한 삽입판" />이다.
+                        </p>
+                        <p>
+                          (13) 뉴런 세포 표면을 감싸며 수초를 형성하고 지지·영양 공급 및 이온 항상성 유지를 담당하는 보조 세포층은 <Blank id="q27" answer="신경교세포" hint="glial cells" />이다.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 서술형 구역 */}
+                    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                      <h4 className="text-sm font-black text-slate-900 flex items-center gap-1">
+                        <span className="w-1.5 h-3.5 bg-indigo-500 rounded-xs"></span>
+                        서술형 메커니즘 완벽 대비
+                      </h4>
+                      <div className="space-y-4 text-slate-700 text-[15px] leading-relaxed">
+                        <div className="bg-slate-50 p-4 rounded-xl border">
+                          <p className="font-bold text-xs text-indigo-600 mb-2">Q. 줄기세포의 전능성(Totipotent), 만능성/다능성(Pluripotent), 다분화능(Multipotent)의 차이점을 발생 가능성과 연계하여 기술하시오.</p>
+                          <p className="text-sm leading-relaxed">
+                            • <strong>전능성:</strong> 수정란 및 초기 8세포기 할구처럼 분비 외막인 자궁 내막 부착 통로인 <Blank id="q28" answer="태반" hint="배외막의 일부 조직" />을 모두 포함하여 완전한 하나의 생명 개체를 독립적으로 발생시킬 수 있는 능력이다.<br />
+                            • <strong>다능성:</strong> 태반으로의 분화는 저해되지만, 위 배엽 외 개체를 이루는 내배엽, 중배엽, 외배엽의 <Blank id="q29" answer="3배엽" hint="배아 유래 조직" /> 세포 조직 전반으로 모두 자유롭게 분화 가능한 범용적 분화능이다.<br />
+                            • <strong>다분화능:</strong> 배아발생 과정이 더 진행되어 특정 배엽과 분화 계통으로 결정되었으며, 해당 계통 유래 성체 조직 범위 내의 한정된 세포들로만 자가 재생 분화할 수 있는 국한적 잠재력이다.
+                          </p>
+                        </div>
+                        <div className="bg-slate-50 p-4 rounded-xl border">
+                          <p className="font-bold text-xs text-indigo-600 mb-2">Q. 최근 생명공학 동향에 기반하여, 오가노이드(Organoid)와 장기 칩(Organ-on-a-chip)이 신약 전임상 전단에서 동물 실험을 대체할 때 얻는 이점을 설명하시오.</p>
+                          <p className="text-sm leading-relaxed">
+                            이종 간 감수성 차이로 임상 일치도가 낮았던 기존의 전임상 <Blank id="q30" answer="동물 실험" hint="전임상 독성 검증 수단" /> 제도를 극복할 수 있다. 인간 세포 유래의 3차원 장기 유사체를 통해 실제 인간 표적에 직접 반응하는 전임상 단계 약물 독성 및 표적 <Blank id="q31" answer="안전성" hint="인간 세포 기반 독성 가이드라인" /> 평가 결과물을 정확하고 신속하게 검출할 수 있으며, 규제 과학 간소화 프로세스를 타고 환자에게 약물 도달 시간을 비약적으로 단축할 수 있다.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 12주차 파트 */}
+                <div className="space-y-4">
+                  <div className="pb-2 border-b border-slate-200 flex justify-between items-center">
+                    <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                      <span className="w-2.5 h-6 bg-emerald-600 rounded-sm"></span>
+                      [12주차] 동물의 생식과 발생 & 출산 (Development & Labor)
+                    </h3>
+                    <span className="text-xs bg-emerald-50 text-emerald-800 px-3 py-1 rounded-full font-bold">월경 주기 & 태아 발생 & 분만 루프</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    {/* 단답형 구역 */}
+                    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                      <h4 className="text-sm font-black text-slate-900 flex items-center gap-1">
+                        <span className="w-1.5 h-3.5 bg-emerald-500 rounded-xs"></span>
+                        단답형 핵심 문항
+                      </h4>
+                      <div className="space-y-3 text-slate-700 text-[15px] leading-relaxed">
+                        <p>
+                          (14) 수정란이 간기 성장기 없이 세대를 급속 거듭하며 세포 수는 급증시키고 할구 단일 체적은 수축시키는 생식 초기 분열은 <Blank id="q32" answer="난할" hint="cleavage" />이다.
+                        </p>
+                        <p>
+                          (15) 발생 중 세포들이 구형 내강강 안으로 역동적으로 이동·함입하여 원장을 만들고 3배엽을 구축하는 발생 시기는 <Blank id="q33" answer="낭배형성" hint="gastrulation" />이다.
+                        </p>
+                        <p>
+                          (16) 태아를 주변 액체로 부양시켜 중력 충격을 최소화하고 피부 건조를 원천 차단하는 액체를 감싼 배외막은 <Blank id="q34" answer="양막" hint="amnion" />이다.
+                        </p>
+                        <p>
+                          (17) 분만 시 시상하부-뇌하수체 자극 신호 호르몬에 민감히 반응하여 강력한 자궁 진통 수축 작용을 진행하는 자궁근은 내장의 <Blank id="q35" answer="평활근" hint="불수의근이자 민무늬근 조직" />층이다.
+                        </p>
+                        <p>
+                          (18) 분만의 1단계 활성 진통기에서 자궁경부가 최대 태아 통과 목적으로 완개되는 경부 직경은 <Blank id="q36" answer="10cm" hint="자궁 완개 임상적 직경 조건" />이다.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 서술형 구역 */}
+                    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                      <h4 className="text-sm font-black text-slate-900 flex items-center gap-1">
+                        <span className="w-1.5 h-3.5 bg-indigo-500 rounded-xs"></span>
+                        서술형 메커니즘 완벽 대비
+                      </h4>
+                      <div className="space-y-4 text-slate-700 text-[15px] leading-relaxed">
+                        <div className="bg-slate-50 p-4 rounded-xl border">
+                          <p className="font-bold text-xs text-indigo-600 mb-2">Q. 난소 월경 주기 중 여포기 말기의 에스트로겐 양성 피드백에 의한 배란(Ovulation) 유도 메커니즘을 상세히 서술하시오.</p>
+                          <p className="text-sm leading-relaxed">
+                            여포가 성숙함에 따라 에스트로겐의 분비량이 극적으로 증가한다. 에스트로겐 농도가 임계치 이상으로 높아지면, 시상하부와 뇌하수체 전엽에 대해 평소의 음성 피드백과 달리 강력한 <Blank id="q37" answer="양성 피드백" hint="에스트로겐이 역치 이상으로 올랐을 때 나타나는 증폭 작용" /> 작용을 개시한다. 이 촉진 결과로 황체형성호르몬인 <Blank id="q38" answer="LH" hint="여포 파열 호르몬 영문 기호" />의 대량 방출(서지, Surge)이 일어나며, 이 호르몬 서지 자극에 의해 성숙한 여포 벽이 파열되면서 난자가 난소 밖으로 배출되는 배란이 성립된다.
+                          </p>
+                        </div>
+                        <div className="bg-slate-50 p-4 rounded-xl border">
+                          <p className="font-bold text-xs text-indigo-600 mb-2">Q. 출산 시 일어나는 옥시토신(Oxytocin)의 수축 양성 피드백 루프 메커니즘을 경로 순서대로 설명하시오.</p>
+                          <p className="text-sm leading-relaxed">
+                            분만이 시작되면 태아의 하강에 의해 자궁경부(Cervix)에 강력한 물리적 신장 압박 자극이 가해진다. 이 압박 신호가 감각 경로를 타고 모체의 시상하부를 자극하면, 뇌하수체 후엽에서 <Blank id="q39" answer="옥시토신" hint="자궁 수축을 유도하는 펩타이드 호르몬" /> 분비를 폭발적으로 가속한다. 분비된 호르몬이 자궁 벽 평활근의 수축 압력을 높이면 태아의 머리가 자궁경부를 더욱 세게 누르게 되고, 이 가중된 자극이 다시 더 많은 호르몬 방출을 유도하는 <Blank id="q40" answer="양성 피드백" hint="출산 완료 시까지 진통 압력을 무한 증폭시키는 제어 루프" /> 순환 구조를 타고 아기가 출산될 때까지 진통의 강도와 주기를 극대화한다.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* Tab 2: 주차별 핵심 메커니즘 도해 분석 */}
+            {activeTab === 'lecture_notes' && (
+              <div className="space-y-6 animate-fadeIn">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-200">
+                  <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                    <span className="w-2.5 h-6 bg-emerald-600 rounded-sm"></span>
+                    주차별 핵심 생명현상 메커니즘 심층 분석 (교재 및 강의 슬라이드 기준)
+                  </h3>
+                  <span className="text-xs bg-indigo-50 text-indigo-800 px-3 py-1 rounded-full font-bold">작동 메커니즘</span>
+                </div>
+
+                {/* 메커니즘 1 */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="bg-emerald-950 px-5 py-4 text-white flex justify-between items-center">
+                    <h4 className="font-extrabold text-sm flex items-center gap-1.5">
+                      <IconLeaf />
+                      1. 피자식물의 중복수정 vs 나자식물의 단일수정 비교 메커니즘
+                    </h4>
+                  </div>
+                  <div className="p-5 space-y-4">
+                    <div className="relative border-l-2 border-emerald-300 pl-4 space-y-3 text-sm text-slate-600">
+                      <div>
+                        <strong className="text-slate-900">피자식물(속씨식물)의 중복수정:</strong> 
+                        수술의 꽃가루주머니에서 발달한 꽃가루(웅성배우자체) 내의 생식세포가 유사분열하여 2개의 <Blank id="q41" answer="정세포" hint="웅성배우자" />를 만듭니다. 화분관을 통해 씨방 밑씨 안으로 들어가서, 하나는 난세포와 수정하여 <Blank id="q42" answer="배" isMath math="2n" hint="embryo (2n)" />를 형성하고, 다른 하나는 2개의 <Blank id="q43" answer="극핵" hint="중앙세포의 극핵" />과 수정하여 <Blank id="q44" answer="배젖" isMath math="3n" hint="endosperm (3n)" />을 형성합니다.
+                      </div>
+                      <div className="border-t border-slate-100 my-2 pt-2">
+                        <strong className="text-slate-900">나자식물(겉씨식물)의 단일수정:</strong> 
+                        밑씨가 씨방에 싸여 있지 않고 원추체 생식 구조를 지닙니다. 수분 후 오직 단 하나의 난세포만이 하나의 정세포와 수정하여 배(2n)를 발달시키고, 배젖 조직 대신 수분 전에 미리 형성되어 있던 반수체 상태의 <strong>자성배우자체(n)</strong>가 그대로 축적되어 영양물질 공급 조직이 됩니다.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 메커니즘 2 */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="bg-slate-950 px-5 py-4 text-white flex justify-between items-center">
+                    <h4 className="font-extrabold text-sm flex items-center gap-1.5">
+                      <IconSliders />
+                      2. 피토크롬(Phytochrome) 광가역 광전환 및 개화 제어 메커니즘
+                    </h4>
+                  </div>
+                  <div className="p-5 space-y-4 text-sm text-slate-600 leading-relaxed">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="bg-slate-50 p-4 rounded-xl border">
+                        <h5 className="font-bold text-slate-800 text-xs uppercase mb-2 text-indigo-600">Pr (비활성형, Inactive Form)</h5>
+                        <ul className="list-disc list-inside space-y-1 text-xs">
+                          <li>자연계 적색광(<MathFormula math="660\,\text{nm}" />)을 최대로 흡수</li>
+                          <li>적색광 흡수 시 생리적 활성 형태인 <Blank id="q45" answer="P_fr" hint="활성형 피토크롬" />형태로 신속히 전환</li>
+                        </ul>
+                      </div>
+                      <div className="bg-slate-50 p-4 rounded-xl border">
+                        <h5 className="font-bold text-slate-800 text-xs uppercase mb-2 text-rose-600">Pfr (활성형, Active Form)</h5>
+                        <ul className="list-disc list-inside space-y-1 text-xs">
+                          <li>원적색광(<MathFormula math="730\,\text{nm}" />)을 최대로 흡수</li>
+                          <li>원적색광 흡수 또는 어둠 속 장시간 방치 시 다시 비활성형인 <Blank id="q46" answer="P_r" hint="비활성형 피토크롬" />형태로 광전환</li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div className="bg-indigo-50/50 p-4 rounded-xl text-xs text-indigo-950 leading-relaxed space-y-1.5">
+                      <strong>개화 통제 및 광중단 효과:</strong>
+                      <p>• <strong>단일식물:</strong> 한계 암기보다 연속적인 밤의 길이가 더 길 때 개화합니다. 밤 도중에 짧은 적색광을 비추는 '광중단'은 밤이 <Blank id="q47" answer="끝났다" hint="광차단 효과" />고 인식하게 만들어 개화를 억제합니다.</p>
+                      <p>• <strong>광전환의 가역성:</strong> 적색광을 비춘 직후 연속적으로 원적색광을 주면 활성 Pfr가 다시 <Blank id="q48" answer="비활성" hint="Pr형 복구" />되므로, 광중단 효과가 상쇄되어 단일식물이 정상 개화합니다.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 메커니즘 3 */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="bg-emerald-950 px-5 py-4 text-white flex justify-between items-center">
+                    <h4 className="font-extrabold text-sm flex items-center gap-1.5">
+                      <IconLeaf />
+                      3. 아그로박테리움 T-DNA 전이 및 크라운골 유도 기작
+                    </h4>
+                  </div>
+                  <div className="p-5 space-y-3 text-sm text-slate-600">
+                    <p>토양 미생물인 아그로박테리움(Agrobacterium tumefaciens)은 고유의 플라스미드 전송 시스템을 통해 식물을 감염시킵니다.</p>
+                    <div className="relative border-l-2 border-emerald-300 pl-4 space-y-2 text-xs">
+                      <div>
+                        <strong>1. 상처 인지:</strong> 식물의 상처 부위에서 방출되는 화학 페놀 신호를 아그로박테리움이 인지합니다.
+                      </div>
+                      <div>
+                        <strong>2. T-DNA 전달:</strong> 아그로박테리움은 자신의 Ti 플라스미드 중 특정 구획인 T-DNA 영역을 식물 핵 내로 발송하여 식물 염색체 속에 영구히 결합시킵니다.
+                      </div>
+                      <div>
+                        <strong>3. 비정상 세포분열 유발:</strong> T-DNA 속에 암호화된 식물 성장 호르몬인 <Blank id="q49" answer="옥신" hint="세포벽 신장 및 분열" />과 <Blank id="q50" answer="시토키닌" hint="세포 분열 촉진 호르몬" /> 합성 유전자가 식물 세포 내에서 대량 전사·번역되어 호르몬 불균형이 유발되고, 미분화 캘러스 암종(크라운골)을 강제 형성시킵니다. 이 메커니즘의 호르몬 합성 유전자를 인위적으로 <Blank id="q51" answer="제거" hint="불활성화 후 유용 유전자 삽입" />하는 것이 식물 형질전환 GMO 대사공학의 핵심 기저가 됩니다.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* /메커니즘 4 */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="bg-slate-950 px-5 py-4 text-white flex justify-between items-center">
+                    <h4 className="font-extrabold text-sm flex items-center gap-1.5">
+                      <IconActivity />
+                      4. 옥시토신 양성 피드백 분만 유도 메커니즘
+                    </h4>
+                  </div>
+                  <div className="p-5 space-y-3">
+                    <p className="text-sm text-slate-600">
+                      분만 개시는 체내 항상성 제어 루프 중 극히 예외적인 강력한 '증폭' 반응인 양성 피드백에 의해 제어됩니다.
+                    </p>
+                    <div className="bg-slate-50 p-4 rounded-xl border space-y-2.5 text-xs text-slate-700">
+                      <div className="flex justify-between items-center bg-white p-2 rounded shadow-xs">
+                        <span>태아의 성장 및 하강 → 자궁경부(Cervix)에 가해지는 강한 수축 물리적 압박</span>
+                        <span className="text-indigo-600 font-bold">감각 신호 인지</span>
+                      </div>
+                      <div className="flex justify-between items-center bg-white p-2 rounded shadow-xs">
+                        <span>시상하부 자극 유발 → 뇌하수체 후엽을 통해 옥시토신 호르몬 대량 방출</span>
+                        <span className="text-emerald-600 font-bold">
+                          <Blank id="q52" answer="옥시토신" hint="자궁 수축 물질" /> 호르몬 서지
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center bg-white p-2 rounded shadow-xs">
+                        <span>자궁 벽 자궁근층 평활근 수축 유도 → 태아를 아래로 강하게 밀어내 자궁경부를 가중 압박</span>
+                        <span className="text-rose-600 font-bold">압박 증가 → 추가 옥시토신 분비 (양성 피드백 루프)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* Tab 3: 분자생명공학기술 (Biotechnology) 존 */}
+            {activeTab === 'chem_physics' && (
+              <div className="space-y-6 animate-fadeIn">
+                <div className="pb-2 border-b border-slate-200">
+                  <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                    <span className="w-2.5 h-6 bg-emerald-600 rounded-sm"></span>
+                    분자생명공학기술 및 조직공학 제어 원리 (강의록 수록 개념)
+                  </h3>
+                </div>
+
+                {/* 1. 아그로박테리움 기반 유전자 재조합 기법 */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
+                  <div className="flex items-center gap-2 text-emerald-950">
+                    <IconScience />
+                    <h4 className="font-extrabold text-[16px]">1. 아그로박테리움(Agrobacterium) 이용 식물 형질전환 GMO 기법</h4>
+                  </div>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    식물 생명공학에서 T-DNA 영역을 유전자 전달의 매개체(Vector)로 활용하는 현대의 형질전환 분자생물학적 프로토콜 단계입니다.
+                  </p>
+                  
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-150 space-y-3 text-xs text-slate-700">
+                    <p>• <strong>제한효소 및 연결 반응:</strong> 야생형 T-DNA 영역 내부에서 비정상 암종(크라운골) 형성을 유도하던 호르몬 합성 유전자 영역을 <Blank id="q53" answer="제한효소" hint="DNA 특정 부위를 정밀하게 절단하는 가위 단백질" />로 제거합니다.</p>
+                    <p>• <strong>재조합 운반체 제작:</strong> 절단된 빈 자리에 우리가 식물체에 도입하여 발현시키고자 하는 유용한 외래 유전자(유용유전자)를 분리하여 플라스미드 벡터에 <Blank id="q54" answer="연결효소" hint="DNA ligase" />로 결합시켜 인공 재조합 플라스미드를 완성합니다.</p>
+                    <p>• <strong>감염 및 재분화:</strong> 완성된 재조합 운반체를 아그로박테리움에 재도입하고 식물 세포에 감염시킵니다. 식물의 유전체 내로 유용유전자가 안정하게 통합되면, 식물 세포 배양 및 선발을 거쳐 최종적으로 식물 호르몬 유발 <Blank id="q55" answer="암 유도" hint="크라운 골의 암 종양 형성" /> 없이 목적 형질이 개량된 유전자 변형 식물체(GMO)를 획득할 수 있습니다.</p>
+                  </div>
+                </div>
+
+                {/* 2. 오가노이드 및 장기 칩 기술과 규제 과학 */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
+                  <div className="flex items-center gap-2 text-emerald-950">
+                    <IconActivity />
+                    <h4 className="font-extrabold text-[16px]">2. 오가노이드(Organoid) & 장기 칩(Organ-on-a-chip) 대체 독성 평가</h4>
+                  </div>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    11주차 생명공학 동향 자료에서 발췌된 미국 FDA의 현대적 전임상 가이드라인과 3차원 조직공학 활용 가치입니다.
+                  </p>
+                  
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-150 space-y-3 text-xs text-slate-700">
+                    <p>• <strong>3차원 세포 모델:</strong> 줄기세포의 분화능을 유도하여 시험관 내에서 인간 장기 기능을 세포 수준에서 완벽히 모방하도록 구현된 <Blank id="q56" answer="3차원" hint="2차원 단층 배양과의 차별점" /> 입체 구조 미니 장기를 오가노이드라 합니다.</p>
+                    <p>• <strong>FDA 가이드라인 전환:</strong> 미국 FDA는 신약 전임상 가이드라인 보도자료를 통해 단클론 항체 및 신약의 유효성 검증 시 기존에 강제해 왔던 필수 <Blank id="q57" answer="동물 실험" hint="동물체를 이용한 비임상 독성 검증 절차" /> 요건을 단계적으로 폐지하고 이를 오가노이드와 장기 칩으로 검증할 수 있도록 허가했습니다.</p>
+                    <p>• <strong>공학적 이점:</strong> 인간 특이적인 표적 약물 반응을 직접 검출하므로 비동물 실험계에서도 강력한 안전성 데이터를 제출하여 허가를 <Blank id="q58" answer="대체" hint="동물 독성 평가를 대신함" /> 및 간소화할 수 있으며, 이로 인해 신약 개발 주기를 단축할 수 있습니다.</p>
+                  </div>
+                </div>
+
+                {/* 3. 식물 캘러스와 호르몬 비율 조절 메커니즘 */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
+                  <div className="flex items-center gap-2 text-emerald-950">
+                    <IconLeaf />
+                    <h4 className="font-extrabold text-[16px]">3. 캘러스(Callus) 조직 배양 시 옥신과 시토키닌의 상대성 비율 지배 구조</h4>
+                  </div>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    식물 조직배양 대사공학에서 식물 세포의 전분화능을 일깨워 조직을 재분화시킬 때 사용하는 수리적 호르몬 조절 규칙입니다.
+                  </p>
+                  
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-150 text-xs text-slate-750 space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="bg-white p-3 rounded shadow-xs border">
+                        <span className="font-bold text-indigo-600">Auxin / Cytokinin 비가 높을 때</span>
+                        <p className="mt-1">정단 분열을 유도하는 <Blank id="q59" answer="옥신" hint="세포벽 신장 및 수소 펌프 작동 호르몬" />의 농도가 지배적일 경우, 미분화 조직으로부터 세포 분열 및 산성화가 유도되어 하단부 <strong>뿌리(Root)</strong>의 분화가 촉진됩니다.</p>
+                      </div>
+                      <div className="bg-white p-3 rounded shadow-xs border">
+                        <span className="font-bold text-rose-600">Cytokinin / Auxin 비가 높을 때</span>
+                        <p className="mt-1">세포 분열을 직접적으로 관장하는 <Blank id="q60" answer="시토키닌" hint="뿌리 끝에서 주로 생성되는 분열 자극 호르몬" />의 농도가 지배적일 경우, 정단 우성이 상쇄되고 신장 분화가 자극되어 상단부 <strong>줄기 및 눈(Shoot)</strong>의 발달이 활성화됩니다.</p>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-white rounded border border-slate-200 text-center">
+                      두 식물 호르몬의 상대적인 <Blank id="q61" answer="비율" hint="Ratio" />이 균형 잡힌 상태로 중간값 수준이면, 세포들은 분화되지 않고 미분화된 세포 분열 덩어리 상태인 <Blank id="q62" answer="캘러스" hint="미분화 식물 세포 덩어리" /> 상태를 계속 보존합니다.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 4: 기말 대비 전범위 초고밀도 요약집 */}
+            {activeTab === 'formulas_all' && (
+              <div className="space-y-6 animate-fadeIn">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-200">
+                  <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                    <span className="w-2.5 h-6 bg-emerald-600 rounded-sm"></span>
+                    기말고사 대비 핵심 개념 및 비교표 총정리
+                  </h3>
+                  <span className="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold">인출식 암기 노트</span>
+                </div>
+
+                {/* 1. 줄기세포 분화능 비교 */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="bg-emerald-950 px-5 py-3 text-white">
+                    <h4 className="text-sm font-bold">1. 줄기세포 분화능의 단계적 등급</h4>
+                  </div>
+                  <div className="p-5">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs text-left border-collapse">
+                        <thead>
+                          <tr className="border-b border-slate-200 bg-slate-50">
+                            <th className="py-2 px-3 font-bold text-slate-600">구분</th>
+                            <th className="py-2 px-3 font-bold text-slate-600">분화 등급</th>
+                            <th className="py-2 px-3 font-bold text-slate-600">대표 세포</th>
+                            <th className="py-2 px-3 font-bold text-slate-600">인출 연습</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="border-b border-slate-100">
+                            <td className="py-3 px-3 font-semibold text-slate-900">전능성</td>
+                            <td className="py-3 px-3">자가 재생은 물론 태반을 포함하여 완벽한 하나의 개체를 온전히 생성할 수 있는 분화능</td>
+                            <td className="py-3 px-3 text-indigo-600 font-semibold">수정란, 초기 8세포기 할구</td>
+                            <td className="py-3 px-3">
+                              <Blank id="q63" answer="전능성" hint="영어로 Totipotent" />
+                            </td>
+                          </tr>
+                          <tr className="border-b border-slate-100">
+                            <td className="py-3 px-3 font-semibold text-slate-900">만능성/다능성</td>
+                            <td className="py-3 px-3">태반 등 배외막 외 배아 내 모든 3배엽 조직으로 계통 제한 없이 분화 가능한 잠재력</td>
+                            <td className="py-3 px-3 text-indigo-600 font-semibold">배아줄기세포 (ESC), 유도만능줄기세포(iPSC)</td>
+                            <td className="py-3 px-3">
+                              <Blank id="q64" answer="다능성" hint="영어로 Pluripotent" />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="py-3 px-3 font-semibold text-slate-900">다분화능</td>
+                            <td className="py-3 px-3">이미 특정 배엽으로 결정되어 동일 유래 계통 범위 한정으로 세포를 교체할 수 있는 능력</td>
+                            <td className="py-3 px-3 text-indigo-600 font-semibold">성체줄기세포, 혈구의 가교인 조혈모세포 등</td>
+                            <td className="py-3 px-3">
+                              <Blank id="q65" answer="다분화능" hint="영어로 Multipotent" />
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. 3배엽 분화 계통도 정리 */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="bg-slate-950 px-5 py-3 text-white">
+                    <h4 className="text-sm font-bold">2. 포유류 낭배형성기 수립 3배엽 분화 조직 표</h4>
+                  </div>
+                  <div className="p-5">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* 외배엽 */}
+                      <div className="border p-4 rounded-xl bg-slate-50/50">
+                        <span className="text-xs font-black text-indigo-600 block mb-2">외배엽 (Ectoderm) 분화</span>
+                        <ul className="text-xs space-y-1 text-slate-600">
+                          <li>• 뇌와 척수, 신호 전달 수용체 전반의 <Blank id="q66" answer="신경계" hint="외막에서 함입된 신경관 유래" />조직</li>
+                          <li>• 신체 외곽을 덮어 가로막는 피부 <Blank id="q67" answer="표피" hint="진피가 아닌 상막층" />조직</li>
+                        </ul>
+                      </div>
+
+                      {/* 중배엽 */}
+                      <div className="border p-4 rounded-xl bg-slate-50/50">
+                        <span className="text-xs font-black text-rose-600 block mb-2">중배엽 (Mesoderm) 분화</span>
+                        <ul className="text-xs space-y-1 text-slate-600">
+                          <li>• 뼈대 골격 및 신체 가동 근육조직 전체인 <Blank id="q68" answer="근골격계" hint="뼈와 골격근" /></li>
+                          <li>• 혈액, 혈관, 심장을 묶어 통전하는 <Blank id="q69" answer="순환계" hint="심장과 혈관, 배설계" /> 및 배설 신장 조직</li>
+                        </ul>
+                      </div>
+
+                      {/* 내배엽 */}
+                      <div className="border p-4 rounded-xl bg-slate-50/50">
+                        <span className="text-xs font-black text-emerald-600 block mb-2">내배엽 (Endoderm) 분화</span>
+                        <ul className="text-xs space-y-1 text-slate-600">
+                          <li>• 소화관 점막과 인두, 허파꽈리를 관통하는 <Blank id="q70" answer="소화기계" hint="폐와 소화관 내벽 내강 상피" /> 및 호흡기계 내강 상피</li>
+                          <li>• 물질 대사 및 해독 가교샘 조직인 <Blank id="q71" answer="간" hint="글리코겐 저장소이자 최대 분비샘" /> 및 이자 조직</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. 배외막 4대 구조와 기능 */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="bg-emerald-950 px-5 py-3 text-white">
+                    <h4 className="text-sm font-bold">3. 태아 발달의 4대 배외막(Extraembryonic Membranes) 기능 매칭</h4>
+                  </div>
+                  <div className="p-5 text-sm space-y-3 text-slate-600 leading-relaxed">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                      <div className="bg-slate-50 p-3 rounded-lg border">
+                        <strong className="text-slate-900 block mb-1">양막 (Amnion):</strong>
+                        태아를 둘러싼 양수 방벽으로, 기계적 <Blank id="q72" answer="충격" hint="물리적 수축 충돌 에너지" /> 흡수 및 배아가 마르지 않도록 <Blank id="q73" answer="건조" hint="수분 증발 방지" />를 차단 방지합니다.
+                      </div>
+
+                      <div className="bg-slate-50 p-3 rounded-lg border">
+                        <strong className="text-slate-900 block mb-1">난황낭 (Yolk Sac):</strong>
+                        포유류에서는 영양 기능 대신 발생 초기 배아의 유일한 첫 번째 <Blank id="q74" answer="조혈" hint="혈액 세포 생산 작용" /> 작용을 도맡아 수행합니다.
+                      </div>
+
+                      <div className="bg-slate-50 p-3 rounded-lg border">
+                        <strong className="text-slate-900 block mb-1">요막 (Allantois):</strong>
+                        배아 내부 물질대사 노폐물을 격리 수용하며, 포유류 배아에서는 발달하여 <Blank id="q75" answer="탯줄" hint="모체와의 동정맥 탯줄 통로" />의 주요 혈관 골격을 형성합니다.
+                      </div>
+
+                      <div className="bg-slate-50 p-3 rounded-lg border">
+                        <strong className="text-slate-900 block mb-1">장막 (Chorion):</strong>
+                        배외 구조 중 최외각층 막으로, 모체의 자궁벽 상피 세포와 맞닿아 정밀 융합하여 물질 교환의 핵심 통로인 <Blank id="q76" answer="태반" hint="placenta" />을 형성 구축합니다.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. 피자식물의 3대 세포 조직학 */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="bg-slate-950 px-5 py-3 text-white">
+                    <h4 className="text-sm font-bold">4. 식물 기본조직(Ground Tissue)의 3대 분화 세포 암기장</h4>
+                  </div>
+                  <div className="p-5 text-xs sm:text-sm leading-relaxed space-y-3 text-slate-600">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                      <div className="bg-slate-50 p-3.5 rounded-lg border">
+                        <strong className="text-indigo-600 block mb-1">유세포 (Parenchyma Cell)</strong>
+                        가장 얇고 유연한 1차 세포벽을 가졌으며, 잎에서 활발한 <Blank id="q77" answer="광합성" hint="빛 에너지 포집 대사" /> 대사 작용과 전분 저장을 도맡아 주관합니다.
+                      </div>
+                      <div className="bg-slate-50 p-3.5 rounded-lg border">
+                        <strong className="text-indigo-600 block mb-1">후각세포 (Collenchyma Cell)</strong>
+                        두께가 불균일하게 발달한 1차 세포벽을 가며, 주로 성장 중인 어린 줄기의 기계적 <Blank id="q78" answer="지지" hint="유연한 구조 유지" />와 인장 강도를 담당합니다.
+                      </div>
+                      <div className="bg-slate-50 p-3.5 rounded-lg border">
+                        <strong className="text-indigo-600 block mb-1">후벽세포 (Sclerenchyma Cell)</strong>
+                        두껍운 리그닌 성분의 2차 세포벽을 가졌으며, 성장이 <Blank id="q79" answer="완료된" hint="중단된 상태" /> 부위에서 죽은 세포 상태로 단단한 구조 지지대 역할을 담당하는 <Blank id="q80" answer="보강세포" hint="또는 섬유세포" /> 등이 여기에 해당합니다.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </main>
+
+          {/* Footer */}
+          <footer className="bg-slate-900 text-slate-400 py-8 px-4 border-t border-slate-800 text-xs">
+            <div className="max-w-4xl mx-auto text-center space-y-3">
+              <p className="font-bold text-slate-300">상명대학교 일반생물학Ⅰ 기말고사 인출식 학습 시스템</p>
+              <p className="text-slate-500 max-w-xl mx-auto leading-relaxed">
+                본 정적 웹 애플리케이션은 라이프사이언스 생명과학 길라잡이 제8판 교재 및 일반생물학1 강의 자료를 기반으로 완벽 재설계되었습니다. 모든 빈칸을 완독하고 기말고사에서 우수한 성과를 달성하시길 기원합니다.
+              </p>
+              <div className="text-slate-600">
+                © 2026 General Biology Study Companion. Built for Education & Chemical Energy Engineering.
+              </div>
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
